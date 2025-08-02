@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domino Portrait Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .upload-section.dragover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+        
+        .upload-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+        }
+        
+        .color-palette {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid #ddd;
+            display: inline-block;
+        }
+        
+        .images-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .image-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .image-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .image-container {
+            border: 2px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            background: #f9f9f9;
+            text-align: center;
+        }
+        
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 15px;
+            transition: transform 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .color-count-section {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .color-count-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+        
+        .color-count-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            transition: transform 0.2s ease;
+        }
+        
+        .color-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #666;
+            flex-shrink: 0;
+        }
+        
+        .color-info {
+            flex: 1;
+        }
+        
+        .color-name {
+            font-weight: bold;
+            color: #333;
+            text-transform: capitalize;
+        }
+        
+        .color-count {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .total-count {
+            text-align: center;
+            font-size: 1.3em;
+            color: #333;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Domino Portrait Generator</h1>
+        
+        <div class="upload-section" id="uploadSection">
+            <p style="font-size: 18px; color: #666; margin-bottom: 20px;">
+                Drop an image here or click to upload
+            </p>
+            <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
+                Choose Image
+            </button>
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="dominoSize">Domino Size:</label>
+                <input type="range" id="dominoSize" min="4" max="20" value="8">
+                <span id="dominoSizeValue">8px</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="imageWidth">Max Width:</label>
+                <input type="range" id="imageWidth" min="20" max="200" value="50">
+                <span id="imageWidthValue">50 dominoes</span>
+            </div>
+        </div>
+        
+        <div class="color-palette">
+            <div class="color-swatch" style="background-color: white; border-color: #ccc;" title="White"></div>
+            <div class="color-swatch" style="background-color: #FFD700;" title="Yellow"></div>
+            <div class="color-swatch" style="background-color: #FFA500;" title="Orange"></div>
+            <div class="color-swatch" style="background-color: #FF0000;" title="Red"></div>
+            <div class="color-swatch" style="background-color: #FFC0CB;" title="Pink"></div>
+            <div class="color-swatch" style="background-color: #0000FF;" title="Blue"></div>
+            <div class="color-swatch" style="background-color: #000080;" title="Dark Blue"></div>
+            <div class="color-swatch" style="background-color: #008000;" title="Green"></div>
+            <div class="color-swatch" style="background-color: #006400;" title="Dark Green"></div>
+            <div class="color-swatch" style="background-color: #000000;" title="Black"></div>
+        </div>
+        
+        <div class="images-container">
+            <div class="image-section">
+                <h3>Original Image</h3>
+                <div class="image-container">
+                    <canvas id="originalCanvas" style="display: none;"></canvas>
+                    <p id="originalPlaceholder" style="color: #999;">Upload an image to see preview</p>
+                </div>
+            </div>
+            
+            <div class="image-section">
+                <h3>Domino Portrait</h3>
+                <div class="image-container">
+                    <canvas id="dominoCanvas" style="display: none;"></canvas>
+                    <p id="dominoPlaceholder" style="color: #999;">Domino portrait will appear here</p>
+                    <div id="loadingIndicator" class="loading" style="display: none;">
+                        Generating domino portrait...
+                    </div>
+                    <button class="download-btn" id="downloadBtn" style="display: none;" onclick="downloadImage()">
+                        Download Portrait
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="color-count-section" id="colorCountSection" style="display: none;">
+            <h3>📊 Domino Color Count</h3>
+            <div class="color-count-container">
+                <div id="colorCountList" class="color-count-list"></div>
+                <div class="total-count">
+                    <strong>Total Dominoes: <span id="totalCount">0</span></strong>
+                </div>
+                <button class="download-btn" onclick="downloadColorList()" style="margin-top: 15px;">
+                    Download Color List
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Domino colors array
+        const dominoColors = [
+            { name: 'white', rgb: [255, 255, 255] },
+            { name: 'yellow', rgb: [255, 215, 0] },
+            { name: 'orange', rgb: [255, 165, 0] },
+            { name: 'red', rgb: [255, 0, 0] },
+            { name: 'pink', rgb: [255, 192, 203] },
+            { name: 'blue', rgb: [0, 0, 255] },
+            { name: 'dark blue', rgb: [0, 0, 139] },
+            { name: 'green', rgb: [0, 128, 0] },
+            { name: 'dark green', rgb: [0, 100, 0] },
+            { name: 'black', rgb: [0, 0, 0] }
+        ];
+
+        // Get DOM elements
+        const imageInput = document.getElementById('imageInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const originalCanvas = document.getElementById('originalCanvas');
+        const dominoCanvas = document.getElementById('dominoCanvas');
+        const dominoSizeSlider = document.getElementById('dominoSize');
+        const imageWidthSlider = document.getElementById('imageWidth');
+        const dominoSizeValue = document.getElementById('dominoSizeValue');
+        const imageWidthValue = document.getElementById('imageWidthValue');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Update slider values
+        dominoSizeSlider.addEventListener('input', (e) => {
+            dominoSizeValue.textContent = e.target.value + 'px';
+            if (window.currentImage) {
+                generateDominoPortrait();
+            }
+        });
+
+        imageWidthSlider.addEventListener('input', (e) => {
+            imageWidthValue.textContent = e.target.value + ' dominoes';
+            if (window.currentImage) {
+                generateDominoPortrait();
+            }
+        });
+
+        // File upload handling
+        imageInput.addEventListener('change', handleImageUpload);
+
+        // Drag and drop functionality
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleImageFile(files[0]);
+            }
+        });
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleImageFile(file);
+            }
+        }
+
+        function handleImageFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    window.currentImage = img;
+                    displayOriginalImage(img);
+                    generateDominoPortrait();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayOriginalImage(img) {
+            const ctx = originalCanvas.getContext('2d');
+            
+            // Set canvas size
+            const maxSize = 400;
+            const scale = Math.min(maxSize / img.width, maxSize / img.height);
+            originalCanvas.width = img.width * scale;
+            originalCanvas.height = img.height * scale;
+            
+            // Draw image
+            ctx.drawImage(img, 0, 0, originalCanvas.width, originalCanvas.height);
+            
+            // Show canvas
+            originalCanvas.style.display = 'block';
+            document.getElementById('originalPlaceholder').style.display = 'none';
+        }
+
+        function generateDominoPortrait() {
+            if (!window.currentImage) return;
+
+            loadingIndicator.style.display = 'block';
+            dominoCanvas.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            document.getElementById('colorCountSection').style.display = 'none';
+
+            // Use setTimeout to allow UI to update
+            setTimeout(() => {
+                const img = window.currentImage;
+                const dominoSize = parseInt(dominoSizeSlider.value);
+                const maxWidth = parseInt(imageWidthSlider.value);
+                
+                // Calculate dimensions
+                const scale = maxWidth / img.width;
+                const canvasWidth = Math.floor(img.width * scale);
+                const canvasHeight = Math.floor(img.height * scale);
+                
+                // Set up canvas for processing
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvasWidth;
+                tempCanvas.height = canvasHeight;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Draw scaled image
+                tempCtx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                const imageData = tempCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+                
+                // Set up domino canvas (2:1 ratio for each domino)
+                dominoCanvas.width = canvasWidth * dominoSize;
+                dominoCanvas.height = canvasHeight * dominoSize * 2;
+                const ctx = dominoCanvas.getContext('2d');
+                
+                // Initialize color counter
+                const colorCounts = {};
+                dominoColors.forEach(color => {
+                    colorCounts[color.name] = 0;
+                });
+                
+                // Process each pixel
+                for (let y = 0; y < canvasHeight; y++) {
+                    for (let x = 0; x < canvasWidth; x++) {
+                        const pixelIndex = (y * canvasWidth + x) * 4;
+                        const r = imageData.data[pixelIndex];
+                        const g = imageData.data[pixelIndex + 1];
+                        const b = imageData.data[pixelIndex + 2];
+                        
+                        // Find closest domino color
+                        const closestColor = findClosestColor([r, g, b]);
+                        
+                        // Count the color
+                        colorCounts[closestColor.name]++;
+                        
+                        // Draw domino (2:1 ratio rectangle)
+                        ctx.fillStyle = `rgb(${closestColor.rgb[0]}, ${closestColor.rgb[1]}, ${closestColor.rgb[2]})`;
+                        ctx.fillRect(
+                            x * dominoSize,
+                            y * dominoSize * 2,
+                            dominoSize,
+                            dominoSize * 2
+                        );
+                        
+                        // Add domino border
+                        ctx.strokeStyle = '#333';
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(
+                            x * dominoSize,
+                            y * dominoSize * 2,
+                            dominoSize,
+                            dominoSize * 2
+                        );
+                    }
+                }
+                
+                // Store color counts globally
+                window.colorCounts = colorCounts;
+                window.totalDominoes = canvasWidth * canvasHeight;
+                
+                // Display color counts
+                displayColorCounts(colorCounts);
+                
+                // Show result
+                loadingIndicator.style.display = 'none';
+                dominoCanvas.style.display = 'block';
+                downloadBtn.style.display = 'inline-block';
+                document.getElementById('dominoPlaceholder').style.display = 'none';
+                document.getElementById('colorCountSection').style.display = 'block';
+            }, 100);
+        }
+
+        function findClosestColor(targetRgb) {
+            let minDistance = Infinity;
+            let closestColor = dominoColors[0];
+            
+            for (const color of dominoColors) {
+                const distance = Math.sqrt(
+                    Math.pow(targetRgb[0] - color.rgb[0], 2) +
+                    Math.pow(targetRgb[1] - color.rgb[1], 2) +
+                    Math.pow(targetRgb[2] - color.rgb[2], 2)
+                );
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestColor = color;
+                }
+            }
+            
+            return closestColor;
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'domino-portrait.png';
+            link.href = dominoCanvas.toDataURL();
+            link.click();
+        }
+
+        function displayColorCounts(colorCounts) {
+            const colorCountList = document.getElementById('colorCountList');
+            const totalCountElement = document.getElementById('totalCount');
+            
+            colorCountList.innerHTML = '';
+            
+            // Sort colors by count (descending)
+            const sortedColors = Object.entries(colorCounts)
+                .sort(([,a], [,b]) => b - a)
+                .filter(([,count]) => count > 0); // Only show colors that are used
+            
+            sortedColors.forEach(([colorName, count]) => {
+                const colorData = dominoColors.find(c => c.name === colorName);
+                const colorItem = document.createElement('div');
+                colorItem.className = 'color-item';
+                
+                colorItem.innerHTML = `
+                    <div class="color-dot" style="background-color: rgb(${colorData.rgb[0]}, ${colorData.rgb[1]}, ${colorData.rgb[2]}); ${colorName === 'white' ? 'border-color: #999;' : ''}"></div>
+                    <div class="color-info">
+                        <div class="color-name">${colorName}</div>
+                        <div class="color-count">${count} pieces</div>
+                    </div>
+                `;
+                
+                colorCountList.appendChild(colorItem);
+            });
+            
+            totalCountElement.textContent = window.totalDominoes;
+        }
+
+        function downloadColorList() {
+            if (!window.colorCounts) return;
+            
+            let csvContent = "Color,Count\n";
+            
+            // Sort colors by count (descending)
+            const sortedColors = Object.entries(window.colorCounts)
+                .sort(([,a], [,b]) => b - a)
+                .filter(([,count]) => count > 0);
+            
+            sortedColors.forEach(([colorName, count]) => {
+                csvContent += `${colorName},${count}\n`;
+            });
+            
+            csvContent += `\nTotal,${window.totalDominoes}`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.download = 'domino-color-list.csv';
+            link.href = window.URL.createObjectURL(blob);
+            link.click();
+        }
+    </script>
+</body>
+</html>
